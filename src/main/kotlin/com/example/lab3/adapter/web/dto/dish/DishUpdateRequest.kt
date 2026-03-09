@@ -4,16 +4,9 @@ import jakarta.validation.constraints.NotBlank
 import org.jetbrains.annotations.NotNull
 import java.math.BigDecimal
 
-data class DishUpdateRequest (
-    @field:NotBlank
-    val name: String,
-
-    @field:NotBlank
-    val description: String,
-
-    @field:NotNull
+data class DishUpdateRequest(
+    @field:NotBlank val name: String,
+    @field:NotBlank val description: String,
     val price: BigDecimal,
-
-    @field:NotNull
     val isAvailable: Boolean
 )
