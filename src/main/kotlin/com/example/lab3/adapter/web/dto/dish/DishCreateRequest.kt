@@ -5,15 +5,8 @@ import org.jetbrains.annotations.NotNull
 import java.math.BigDecimal
 
 data class DishCreateRequest (
-    @field:NotBlank
-    val name: String,
-
-    @field:NotBlank
-    val description: String,
-
-    @field:NotNull
+    @field:NotBlank val name: String,
+    @field:NotBlank val description: String,
     val price: BigDecimal,
-
-    @field:NotNull
     val isAvailable: Boolean
 )

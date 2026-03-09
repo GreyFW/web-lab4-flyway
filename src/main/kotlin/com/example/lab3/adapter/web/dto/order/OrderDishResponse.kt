@@ -1,12 +1,10 @@
-package com.example.lab3.adapter.web.dto.dish
+package com.example.lab3.adapter.web.dto.order
 
-import java.math.BigDecimal
-
-data class DishResponse(
+data class OrderDishResponse(
     val id: Long,
     val name: String,
     val description: String,
-    val price: BigDecimal,
+    val price: java.math.BigDecimal,
     val isAvailable: Boolean,
     val restaurantId: Long
 )

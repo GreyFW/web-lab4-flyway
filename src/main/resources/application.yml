@@ -1,28 +1,44 @@
 spring:
     profiles:
-        active: jpa  # по умолчанию используем JPA профиль
-
----
-spring:
-    config:
-        activate:
-            on-profile: jpa
-
+        active: jpa
     datasource:
-        url: jdbc:postgresql://localhost:5432/postgres
-        username: postgres
-        password: postgres
-
+        url: ${DB_URL:jdbc:postgresql://localhost:5432/postgres}
+        username: ${DB_USER:postgres}
+        password: ${DB_PASS:postgres}
+        driver-class-name: org.postgresql.Driver
     jpa:
         hibernate:
             ddl-auto: validate
         show-sql: true
-
----
-spring:
-    config:
-        activate:
-            on-profile: mock
+        properties:
+            hibernate:
+                format_sql: true
+    flyway:
+        enabled: true
+        baseline-on-migrate: true
+        locations:
+            - classpath:db/migration
 
 server:
     port: ${SERVER_PORT:8080}
+
+---
+# Профиль для CI — использует H2 вместо PostgreSQL
+spring:
+    config:
+        activate:
+            on-profile: ci
+    datasource:
+        url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+        username: sa
+        password:
+        driver-class-name: org.h2.Driver
+    jpa:
+        hibernate:
+            ddl-auto: none
+        database-platform: org.hibernate.dialect.H2Dialect
+    flyway:
+        enabled: true
+        baseline-on-migrate: true
+        locations:
+            - classpath:db/migration
