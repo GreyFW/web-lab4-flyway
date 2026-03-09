@@ -1,6 +1,8 @@
 package com.example.lab3.adapter.web
 
-import com.example.lab3.application.exception.*
+import com.example.lab3.application.exception.AlreadyExistsException
+import com.example.lab3.application.exception.NotFoundByIdException
+import com.example.lab3.application.exception.ValidationException
 import com.example.lab3.adapter.web.dto.ErrorResponse
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -30,8 +32,8 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
             HttpStatus.BAD_REQUEST
         )
 
-    @ExceptionHandler(EmptyOrderException::class)
-    fun handleValidation(ex: EmptyOrderException): ResponseEntity<ErrorResponse> =
+    @ExceptionHandler(ValidationException::class)
+    fun handleValidation(ex: ValidationException): ResponseEntity<ErrorResponse> =
         ResponseEntity(
             ErrorResponse(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.reasonPhrase, ex.message ?: "Validation error"),
             HttpStatus.BAD_REQUEST

@@ -1,7 +1,7 @@
 package com.example.lab3.application.service
 
 import com.example.lab3.application.exception.NotFoundByIdException
-import com.example.lab3.application.exception.EmptyOrderException
+import com.example.lab3.application.exception.ValidationException
 import com.example.lab3.domain.model.Order
 import com.example.lab3.domain.model.OrderStatus
 import com.example.lab3.domain.port.DishRepositoryPort
@@ -17,14 +17,17 @@ open class OrderService(
     private val dishRepository: DishRepositoryPort
 ) {
     fun create(userId: Long, dishIds: List<Long>): Order {
+        // 400 если пользователь не найден (не 404!)
         userRepository.findById(userId)
-            ?: throw NotFoundByIdException("User", userId)
+            ?: throw ValidationException("User with id=$userId not found")
 
-        if (dishIds.isEmpty()) throw EmptyOrderException()
+        if (dishIds.isEmpty())
+            throw ValidationException("Order must contain at least one dish")
 
+        // 400 если блюдо не найдено (не 404!)
         val dishes = dishIds.map { dishId ->
             dishRepository.findById(dishId)
-                ?: throw NotFoundByIdException("Dish", dishId)
+                ?: throw ValidationException("Dish with id=$dishId not found")
         }
 
         val order = Order(
@@ -44,7 +47,21 @@ open class OrderService(
         orderRepository.findAll(userId, status)
 
     fun updateStatus(id: Long, newStatus: OrderStatus): Order {
-        val order = orderRepository.findById(id) ?: throw NotFoundByIdException("Order", id)
+        val order = orderRepository.findById(id)
+            ?: throw NotFoundByIdException("Order", id)
+
+        val allowed = mapOf(
+            OrderStatus.PENDING    to setOf(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
+            OrderStatus.CONFIRMED  to setOf(OrderStatus.DELIVERED, OrderStatus.CANCELLED),
+            OrderStatus.DELIVERED  to emptySet(),
+            OrderStatus.CANCELLED  to emptySet()
+        )
+        if (newStatus !in (allowed[order.status] ?: emptySet<OrderStatus>())) {
+            throw ValidationException(
+                "Invalid status transition from ${order.status} to $newStatus"
+            )
+        }
+
         return orderRepository.update(order.copy(status = newStatus))
     }
 }
