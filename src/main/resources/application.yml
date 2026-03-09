@@ -1,0 +1,28 @@
+spring:
+    profiles:
+        active: jpa  # по умолчанию используем JPA профиль
+
+---
+spring:
+    config:
+        activate:
+            on-profile: jpa
+
+    datasource:
+        url: jdbc:postgresql://localhost:5432/postgres
+        username: postgres
+        password: postgres
+
+    jpa:
+        hibernate:
+            ddl-auto: validate
+        show-sql: true
+
+---
+spring:
+    config:
+        activate:
+            on-profile: mock
+
+server:
+    port: ${SERVER_PORT:8080}
