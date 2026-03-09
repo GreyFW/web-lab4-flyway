@@ -45,12 +45,10 @@ class RestaurantController(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@PathVariable id: Long) = restaurantService.delete(id)
 
-    // GET /api/v1/restaurants/{id}/dishes — меню ресторана (без N+1 через @EntityGraph)
     @GetMapping("/{id}/dishes")
     fun getDishes(@PathVariable id: Long): List<DishResponse> =
         restaurantService.getDishes(id).map { DishMapper.toResponse(it) }
 
-    // POST /api/v1/restaurants/{restaurantId}/dishes — добавить блюдо в ресторан
     @PostMapping("/{restaurantId}/dishes")
     fun createDish(
         @PathVariable restaurantId: Long,

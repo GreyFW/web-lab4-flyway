@@ -17,14 +17,12 @@ open class OrderService(
     private val dishRepository: DishRepositoryPort
 ) {
     fun create(userId: Long, dishIds: List<Long>): Order {
-        // 400 если пользователь не найден (не 404!)
         userRepository.findById(userId)
             ?: throw ValidationException("User with id=$userId not found")
 
         if (dishIds.isEmpty())
             throw ValidationException("Order must contain at least one dish")
 
-        // 400 если блюдо не найдено (не 404!)
         val dishes = dishIds.map { dishId ->
             dishRepository.findById(dishId)
                 ?: throw ValidationException("Dish with id=$dishId not found")
