@@ -1,7 +1,6 @@
 package com.example.lab3.adapter.web
 
-import com.example.lab3.application.exception.AlreadyExistsException
-import com.example.lab3.application.exception.NotFoundByIdException
+import com.example.lab3.application.exception.*
 import com.example.lab3.adapter.web.dto.ErrorResponse
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -18,53 +17,41 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(NotFoundByIdException::class)
-    fun handleNotFound(ex: NotFoundByIdException): ResponseEntity<ErrorResponse> {
-        val error = ErrorResponse(
-            status = HttpStatus.NOT_FOUND.value(),
-            error = HttpStatus.NOT_FOUND.reasonPhrase,
-            message = ex.message ?: "Resource not found"
+    fun handleNotFound(ex: NotFoundByIdException): ResponseEntity<ErrorResponse> =
+        ResponseEntity(
+            ErrorResponse(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.reasonPhrase, ex.message ?: "Not found"),
+            HttpStatus.NOT_FOUND
         )
-        return ResponseEntity(error, HttpStatus.NOT_FOUND)
-    }
 
     @ExceptionHandler(AlreadyExistsException::class)
-    fun handleAlreadyExists(ex: AlreadyExistsException): ResponseEntity<ErrorResponse> {
-        val error = ErrorResponse(
-            status = HttpStatus.BAD_REQUEST.value(),
-            error = HttpStatus.BAD_REQUEST.reasonPhrase,
-            message = ex.message ?: "Already exists"
+    fun handleAlreadyExists(ex: AlreadyExistsException): ResponseEntity<ErrorResponse> =
+        ResponseEntity(
+            ErrorResponse(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.reasonPhrase, ex.message ?: "Already exists"),
+            HttpStatus.BAD_REQUEST
         )
-        return ResponseEntity(error, HttpStatus.BAD_REQUEST)
-    }
+
+    @ExceptionHandler(EmptyOrderException::class)
+    fun handleValidation(ex: EmptyOrderException): ResponseEntity<ErrorResponse> =
+        ResponseEntity(
+            ErrorResponse(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.reasonPhrase, ex.message ?: "Validation error"),
+            HttpStatus.BAD_REQUEST
+        )
 
     override fun handleHttpMessageNotReadable(
-        ex: HttpMessageNotReadableException,
-        headers: HttpHeaders,
-        status: HttpStatusCode,
-        request: WebRequest
-    ): ResponseEntity<Any> {
-        val error = ErrorResponse(
-            status = HttpStatus.BAD_REQUEST.value(),
-            error = HttpStatus.BAD_REQUEST.reasonPhrase,
-            message = ex.mostSpecificCause?.message ?: "Failed to read request"
-        )
-        return ResponseEntity(error, HttpStatus.BAD_REQUEST)
-    }
+        ex: HttpMessageNotReadableException, headers: HttpHeaders, status: HttpStatusCode, request: WebRequest
+    ): ResponseEntity<Any> = ResponseEntity(
+        ErrorResponse(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.reasonPhrase,
+            ex.mostSpecificCause?.message ?: "Failed to read request"),
+        HttpStatus.BAD_REQUEST
+    )
 
     override fun handleMethodArgumentNotValid(
-        ex: MethodArgumentNotValidException,
-        headers: HttpHeaders,
-        status: HttpStatusCode,
-        request: WebRequest
+        ex: MethodArgumentNotValidException, headers: HttpHeaders, status: HttpStatusCode, request: WebRequest
     ): ResponseEntity<Any> {
-        val msg = ex.bindingResult.fieldErrors.joinToString("; ") {
-            "${it.field} ${it.defaultMessage}"
-        }
-        val error = ErrorResponse(
-            status = HttpStatus.BAD_REQUEST.value(),
-            error = HttpStatus.BAD_REQUEST.reasonPhrase,
-            message = msg
+        val msg = ex.bindingResult.fieldErrors.joinToString("; ") { "${it.field} ${it.defaultMessage}" }
+        return ResponseEntity(
+            ErrorResponse(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.reasonPhrase, msg),
+            HttpStatus.BAD_REQUEST
         )
-        return ResponseEntity(error, HttpStatus.BAD_REQUEST)
     }
 }
