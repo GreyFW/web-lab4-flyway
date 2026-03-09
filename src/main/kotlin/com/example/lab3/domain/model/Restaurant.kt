@@ -1,4 +1,7 @@
 package com.example.lab3.domain.model
 
-class Restaurant {
-}
+data class Restaurant(
+    val id: Long?,
+    val name: String,
+    val address: String
+)
