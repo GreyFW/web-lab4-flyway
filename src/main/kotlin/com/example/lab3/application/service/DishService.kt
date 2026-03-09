@@ -1,18 +1,22 @@
 package com.example.lab3.application.service
 
 import com.example.lab3.application.exception.AlreadyExistsException
+import com.example.lab3.application.exception.NotFoundByIdException
 import com.example.lab3.domain.model.Dish
 import com.example.lab3.domain.port.DishRepositoryPort
-import com.example.lab3.application.exception.NotFoundByIdException
+import com.example.lab3.domain.port.RestaurantRepositoryPort
 import org.springframework.stereotype.Service
 
 @Service
 open class DishService(
-    private val dishRepository: DishRepositoryPort
+    private val dishRepository: DishRepositoryPort,
+    private val restaurantRepository: RestaurantRepositoryPort
 ) {
     fun create(dish: Dish): CreateDishResult {
-        val existing = dishRepository.findByName(dish.name)
+        restaurantRepository.findById(dish.restaurantId)
+            ?: throw NotFoundByIdException("Restaurant", dish.restaurantId)
 
+        val existing = dishRepository.findByName(dish.name)
         return if (existing != null) {
             CreateDishResult(existing, false)
         } else {
@@ -29,10 +33,8 @@ open class DishService(
             ?: throw NotFoundByIdException("Dish", id)
 
         val dishWithSameName = dishRepository.findByName(updatedDish.name)
-
-        if (dishWithSameName != null && dishWithSameName.id != id) {
+        if (dishWithSameName != null && dishWithSameName.id != id)
             throw AlreadyExistsException("Dish", "name", updatedDish.name)
-        }
 
         val dishToSave = existingDish.copy(
             name = updatedDish.name,
@@ -44,7 +46,7 @@ open class DishService(
     }
 
     fun delete(id: Long) {
-        val existingDish = dishRepository.findById(id) ?: throw NotFoundByIdException("Dish", id)
+        dishRepository.findById(id) ?: throw NotFoundByIdException("Dish", id)
         dishRepository.delete(id)
     }
 
