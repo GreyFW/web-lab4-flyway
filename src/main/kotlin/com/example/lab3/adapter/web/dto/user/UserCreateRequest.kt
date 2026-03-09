@@ -8,11 +8,9 @@ data class UserCreateRequest(
     @field:NotBlank
     val email: String,
 
-    @field:NotBlank
-    val firstName: String,
+    @field:NotBlank val firstName: String,
 
-    @field:NotBlank
-    val lastName: String,
+    @field:NotBlank val lastName: String,
 
     val isActive: Boolean = true
 )
